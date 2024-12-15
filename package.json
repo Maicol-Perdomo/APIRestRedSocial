@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemoon index.js"
+    "start": "nodemon index.js"
   },
   "author": "Maicol Perdomo",
   "license": "MIT",
