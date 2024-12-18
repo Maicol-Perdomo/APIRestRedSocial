@@ -1,5 +1,6 @@
 // Importar dependencias y modulos
-const User = require("../models/user")
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
 
 // Acciones de prueba
 const pruebaUser = (req, res) =>{
@@ -20,8 +21,6 @@ const register = async (req, res) =>{
         })
     };
 
-    // Crear objeto de usuario
-    let user_to_save = new User(params);
     try{
         // Control de usuarios duplicados 
         /*
@@ -31,8 +30,8 @@ const register = async (req, res) =>{
         const users = await User.find({ 
             $or: 
                 [
-                    {email: user_to_save.email.toLowerCase()},
-                    {nick: user_to_save.nick.toLowerCase()}
+                    {email: params.email.toLowerCase()},
+                    {nick: params.nick.toLowerCase()}
             ]
         });
 
@@ -43,15 +42,20 @@ const register = async (req, res) =>{
 			});
 		}      
         // Cifrar la contraseña
+        let pwd = await bcrypt.hash(params.password, 10)
+        params.password = pwd;
 
+        // Crear objeto de usuario
+        let user_to_save = new User(params);
+        
         // Guardar usuario en la bbdd
+        const userStored = await user_to_save.save();
 
         // Devolver resultado
         return res.status(200).json({
             status: "success",
-            message: "Accion de registro de usuarios",
-            params,
-            user_to_save
+            message: "Usuario Registrado correctamente",
+            userStored
         });
     }catch(error){
         return res.status(500).json({
