@@ -21,6 +21,13 @@ app.use(express.json()); /** middelware que nos codifica los datos del body y lo
 app.use(express.urlencoded({extended: true})) /** cualquier dato que llegue en formato form URL en codec lo codifica */
 
 // Cargar conf rutas
+const UserRoutes = require("./routes/user");
+const PublicationRoutes = require("./routes/publication");
+const FollowRoutes = require("./routes/follow")
+
+app.use("/api", UserRoutes);
+app.use("/api", PublicationRoutes);
+app.use("/api", FollowRoutes);
 
 // Ruta de Prueba
 app.get("/ruta-prueba", (req, res) =>{
