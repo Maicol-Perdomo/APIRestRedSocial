@@ -22,6 +22,11 @@ const register = async (req, res) =>{
     };
 
     try{
+        // Normalizar los datos
+        params.email = params.email.toLowerCase().trim();
+        params.nick = params.nick.toLowerCase().trim();
+        params.name = params.name.toLowerCase().trim();
+
         // Control de usuarios duplicados 
         /*
           Todas las condiciones del or se tienen que cumplir una u otra
@@ -38,7 +43,8 @@ const register = async (req, res) =>{
 		if(users && users.length >= 1){
 			return res.status(200).send({
 				status: "success",
-				message:"El usuario ya existe"
+				message:"El usuario ya existe",
+                field: users[0].email == params.email ? "El email ya esta registrado" : "El nick ya esta registrado"
 			});
 		}      
         // Cifrar la contraseña
@@ -51,12 +57,67 @@ const register = async (req, res) =>{
         // Guardar usuario en la bbdd
         const userStored = await user_to_save.save();
 
+        const userToReturn = userStored.toObject();
+        delete userToReturn.password;
+
         // Devolver resultado
         return res.status(200).json({
             status: "success",
             message: "Usuario Registrado correctamente",
-            userStored
+            user: userToReturn
         });
+    }catch(error){
+        return res.status(500).json({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+}
+
+// login de usuarios
+const login = async (req, res) =>{
+    // Recoger parametros
+    let params = req.body
+    params.email = params.email.toLowerCase().trim();
+    if(!params.email || !params.password){
+        return res.status(400).json({
+            status: "error",
+            message: "Faltan datos por enviar"
+        });
+    }
+    try{
+        // Buscar usuario en la bbdd
+        const user = await User.findOne({email: params.email});
+        if(!user){
+            return res.status(404).json({
+                status: "error",
+                message: "Usuarion no encontrado"
+            })
+        }
+        // Comprobar contraseña
+        const pwd = bcrypt.compareSync(params.password, user.password);
+        if(!pwd){
+            return res.status(400).json({
+                status: "error",
+                message: "Contrasenia incorrecta"
+            })
+        }
+        
+        // Coseguir Token 
+        const token = false;
+        
+        // Devolver Datos Usuario
+        return res.status(200).json({
+            status: "success",
+            message: "Te has identificado correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                nick: user.nick,
+            },
+            token
+        });
+
     }catch(error){
         return res.status(500).json({
             status: "error",
@@ -68,5 +129,6 @@ const register = async (req, res) =>{
 // Exportar acciones
 module.exports={
     pruebaUser,
-    register
+    register,
+    login
 }
