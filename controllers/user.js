@@ -2,6 +2,9 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 
+// importar servicios
+const jwt = require("../services/jwt");
+
 // Acciones de prueba
 const pruebaUser = (req, res) =>{
     return res.status(200).send({
@@ -104,7 +107,7 @@ const login = async (req, res) =>{
         }
         
         // Coseguir Token 
-        const token = false;
+        const token = jwt.createTokens(user);
         
         // Devolver Datos Usuario
         return res.status(200).json({
