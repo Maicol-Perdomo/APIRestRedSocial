@@ -267,10 +267,16 @@ const update = async (req, res) =>{
     }catch(err){
         return res.status(500).send({
             status: "error",
-            message: "Error en la consulta",
-            userToUpdate
+            message: "Error en la consulta"
         })
     }
+}
+const upload = (req, res) =>{
+    return res.status(200).send({
+        status: "success",
+        message: "Metodo subir imagen",
+        file: req.file
+    });
 }
 
 // Exportar acciones
@@ -280,5 +286,6 @@ module.exports={
     login,
     profile,
     list,
-    update
+    update,
+    upload
 }
