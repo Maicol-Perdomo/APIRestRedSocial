@@ -157,11 +157,26 @@ const profile = async (req, res) => {
     }
 } 
 
+const list = async (req, res)=>{
+    // Controlar en que pagina estamos
+
+    try{
+        // Consulta con mondoose paginate
+
+        // Devolver resultado (posteriormente info follow)
+        return res.status(200).send({
+            status: "success",
+            message: "Ruta de listado de usuarios"
+        })
+    }catch(error){}
+}
+
 
 // Exportar acciones
 module.exports={
     pruebaUser,
     register,
     login,
-    profile
+    profile,
+    list
 }
