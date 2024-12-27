@@ -200,11 +200,85 @@ const list = async (req, res) => {
     }
 };
 
+const update = async (req, res) =>{
+    // Recoger los datos del usuario
+    let userIdentity = req.user;
+    let userToUpdate = req.body;
+
+    // Elimnar campos innecesarios
+    delete userToUpdate.iat;
+    delete userToUpdate.exp;
+    delete userToUpdate.role;
+    delete userToUpdate.image;
+
+    // Comprobar si el usuario existe
+    try{
+        // Normalizar los datos si existen
+        if(userToUpdate.email) userToUpdate.email = userToUpdate.email.toLowerCase().trim();
+        if(userToUpdate.nick) userToUpdate.nick = userToUpdate.nick.toLowerCase().trim();
+        if(userToUpdate.name) userToUpdate.name = userToUpdate.name.toLowerCase().trim();
+
+        // Control de usuarios duplicados 
+        /*
+          Todas las condiciones del or se tienen que cumplir una u otra
+          Si existe una u otra, es que existe el usuario
+        */
+        const users = await User.find({ 
+            $or: 
+                [
+                    {email: userToUpdate.email.toLowerCase()},
+                    {nick: userToUpdate.nick.toLowerCase()}
+            ]
+        });   
+
+        let userIsset = false;
+        users.forEach(user => {
+            if(user && user._id != userIdentity.id) userIsset = true;
+        });
+
+        if(userIsset){
+            return res.status(200).send({
+                status: "success",
+                message: "El usuario ya existe"
+            })
+        }
+
+        // Cifrar la contraseña
+        if(userToUpdate.password){
+            let pwd = await bcrypt.hash(userToUpdate.password, 10)
+            userToUpdate.password = pwd;
+        }
+
+        // Buscar y actualizar
+        let userUpdate = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true});
+
+        if(!userUpdate){
+            return res.status(404).send({
+                status: "error",
+                message: "El usuario no se ha actualizado"
+            });
+        }
+
+        return res.status(200).send({
+            status: "success",
+            message: "Metodo actualizar usuario",
+            user: userUpdate
+        });
+    }catch(err){
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta",
+            userToUpdate
+        })
+    }
+}
+
 // Exportar acciones
 module.exports={
     pruebaUser,
     register,
     login,
     profile,
-    list
+    list,
+    update
 }
