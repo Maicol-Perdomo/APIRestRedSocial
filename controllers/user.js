@@ -129,9 +129,39 @@ const login = async (req, res) =>{
     }
 }
 
+const profile = async (req, res) => {
+    // Recibir el parametro del id de ususario por url
+    let userId = req.params.id;
+   
+    try{
+        // Consulta para sacar los datos del usuario, sin devolver password ni role
+        let userProfile = await User.findById(userId).select("-password -role");
+        if(!userProfile){
+            return res.status(404).send({
+                status: "error",
+                message: "El Usuario no esta registrado"
+            })
+        }
+
+        // Devolver resultado
+        return res.status(200).send({
+            status: "succes",
+            user: userProfile
+        })
+
+    }catch(error){
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+} 
+
+
 // Exportar acciones
 module.exports={
     pruebaUser,
     register,
-    login
+    login,
+    profile
 }

@@ -6,7 +6,8 @@ const check = require("../middelwares/auth");
 // Definir rutas
 router.get("/prueba-user", check.auth ,UserController.pruebaUser);
 router.post("/register", UserController.register);
-router.get("/login", UserController.login);
+router.post("/login", UserController.login);
+router.get("/profile/:id", check.auth, UserController.profile);
 
 // Exportar router
 module.exports= router
