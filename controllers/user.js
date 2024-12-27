@@ -1,9 +1,13 @@
-// Importar dependencias y modulos
+// Importar dependencias
 const bcrypt = require("bcrypt");
+
+// Importar modelos
 const User = require("../models/user");
+
 
 // importar servicios
 const jwt = require("../services/jwt");
+const user = require("../models/user");
 
 // Acciones de prueba
 const pruebaUser = (req, res) =>{
@@ -157,20 +161,44 @@ const profile = async (req, res) => {
     }
 } 
 
-const list = async (req, res)=>{
+const list = async (req, res) => {
     // Controlar en que pagina estamos
+    let page = parseInt(req.params.page) || 1;
+    let itemsPerPage = 5;
 
-    try{
-        // Consulta con mondoose paginate
+    try {
+        // Consulta con mongoose paginate
+        const options = {
+            page: page,
+            limit: itemsPerPage,
+            sort: { _id: 1 }
+        };
 
-        // Devolver resultado (posteriormente info follow)
+        const result = await User.paginate({}, options);
+
+        if (!result.docs || result.docs.length === 0) {
+            return res.status(404).send({
+                status: "error",
+                message: "No hay usuarios que mostrar"
+            });
+        }
+
+        // Devolver resultado
         return res.status(200).send({
             status: "success",
-            message: "Ruta de listado de usuarios"
-        })
-    }catch(error){}
-}
-
+            message: "Ruta de listado de usuarios",
+            users: result.docs,
+            totalUsers: result.totalDocs,
+            totalPages: result.totalPages,
+            page: result.page
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta"
+        });
+    }
+};
 
 // Exportar acciones
 module.exports={

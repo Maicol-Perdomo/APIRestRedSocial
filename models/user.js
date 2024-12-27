@@ -2,6 +2,7 @@
   OBJETOS QUE VAN A DEFINIR EL MOLDE QUE VA A TENER CADA DOCUMENTO QUE VOY A GUARDAR 
 */
 const {Schema, model} = require("mongoose");
+const mongoosePagination = require("mongoose-paginate-v2")
 
 const UserSchema = Schema({
     name: {
@@ -34,5 +35,7 @@ const UserSchema = Schema({
         default: Date.now
     }
 })
+
+UserSchema.plugin(mongoosePagination);
 
 module.exports = model("User", UserSchema, "users"); // nombre, formato, en que coleccion de datos lo guardare(por defecto seria users)
