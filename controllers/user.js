@@ -1,5 +1,6 @@
 // Importar dependencias
 const bcrypt = require("bcrypt");
+const fs = require("fs");
 
 // Importar modelos
 const User = require("../models/user");
@@ -272,6 +273,35 @@ const update = async (req, res) =>{
     }
 }
 const upload = (req, res) =>{
+    // Recoger el fichero de imagen y comprobar que existe
+    if(!req.file){
+        return res.status(404).send({
+            status: "error",
+            message: "No se ha subido ninguna imagen"
+        })
+    };
+    // Conseguir el nombre del archivo
+    let image = req.file.originalname;
+
+    // Sacar la extension del archivo
+    const imageSplit = image.split("\.");
+    const extension = imageSplit[1];
+
+    // Comprobar la extension, solo imagenes, si no es valida borrar el fichero
+    if(extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif"){
+        // borrar el archivo
+        const filePath = req.file.path;
+        const fileDeleted = fs.unlinkSync(filePath);
+
+        // Devolver respuesta negativa
+        return res.status(400).send({
+            status: "error",
+            message: "La extension del archivo no es valida"
+        });
+    }
+    // si es correcto, guardar la imagen
+
+
     return res.status(200).send({
         status: "success",
         message: "Metodo subir imagen",
