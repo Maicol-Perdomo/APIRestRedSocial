@@ -1,6 +1,7 @@
 // Importar dependencias
 const bcrypt = require("bcrypt");
 const fs = require("fs");
+const path = require("path");
 
 // Importar modelos
 const User = require("../models/user");
@@ -272,7 +273,8 @@ const update = async (req, res) =>{
         })
     }
 }
-const upload = (req, res) =>{
+
+const upload = async (req, res) =>{
     // Recoger el fichero de imagen y comprobar que existe
     if(!req.file){
         return res.status(404).send({
@@ -280,18 +282,20 @@ const upload = (req, res) =>{
             message: "No se ha subido ninguna imagen"
         })
     };
+
     // Conseguir el nombre del archivo
     let image = req.file.originalname;
 
     // Sacar la extension del archivo
     const imageSplit = image.split("\.");
-    const extension = imageSplit[1];
+    const extension = imageSplit[1].toLowerCase();
 
     // Comprobar la extension, solo imagenes, si no es valida borrar el fichero
-    if(extension != "png" && extension != "jpg" && extension != "jpeg" && extension != "gif"){
+    const validExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
+    if(!validExtensions.includes(extension)){
         // borrar el archivo
         const filePath = req.file.path;
-        const fileDeleted = fs.unlinkSync(filePath);
+        fs.unlinkSync(filePath);
 
         // Devolver respuesta negativa
         return res.status(400).send({
@@ -299,14 +303,78 @@ const upload = (req, res) =>{
             message: "La extension del archivo no es valida"
         });
     }
-    // si es correcto, guardar la imagen
+
+    try{
+        /*
+        // si es correcto, guardar la imagen
+        let updatedUser = await User.findByIdAndUpdate(req.user.id, {image: req.file.filename}, {new: true});
+        */
+        // Buscar el usuario
+        let updatedUser = await User.findById(req.user.id);
+        if(!updatedUser){
+            return res.status(404).send({
+                status: "error",
+                message: "Usuario no encontrado"
+            });
+        }
+        // obtener image
+        let imageUser = updatedUser.image;
+        // si tiene imagen, borrarla
+        if(imageUser || imageUser != "default.png"){
+            const filePath = `./uploads/avatars/${imageUser}`;
+            fs.unlinkSync(filePath);
+        }
+        // Actualizar usuario
+        updatedUser.image = req.file.filename;
+        await updatedUser.save();
 
 
-    return res.status(200).send({
-        status: "success",
-        message: "Metodo subir imagen",
-        file: req.file
-    });
+        // Devolver respuesta positiva
+        return res.status(200).send({
+            status: "success",
+            message: "Metodo subir imagen",
+            user: {
+                name: updatedUser.name,
+                nick: updatedUser.nick,
+                image: updatedUser.image
+            }
+        });
+
+    }catch(err){
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta",
+            error: err
+        })
+    }
+}
+
+const avatar = (req, res) =>{
+    // Sacar parametro de la url
+    const file = req.params.file;
+
+    // montar el path real de la imagen
+    const filePath = `./uploads/avatars/${file}`;
+
+    // comprobar que existe 
+    fs.stat(filePath, (error, exist) =>{
+        if(error){
+            return res.status(500).send({
+                status: "error",
+                message: "Error en la consulta"
+            })
+        }
+
+        if(!exist){ 
+            return res.status(404).send({
+                status: "error",
+                message: "La imagen no existe"
+            })
+        }
+
+        // devolver file
+        return res.sendFile(path.resolve(filePath));
+    }) 
 }
 
 // Exportar acciones
@@ -317,5 +385,6 @@ module.exports={
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
