@@ -59,17 +59,10 @@ const unfollow = async (req, res) =>{
             "user": userId, 
             "followed": followedId
         }).deleteOne()
-    
-        if(!followDeleted){
-            return res.status(404).send({
-                status: "error",
-                message: "No se sigue al usuario"
-            })
-        }
 
         return res.status(200).send({
             status: "error",
-            message: "se ha dejado de seguir"
+            message: "Follow eliminado Correctamente"
         })
 
     }catch(error){
@@ -82,13 +75,40 @@ const unfollow = async (req, res) =>{
 
 }
 
-// Accion listado de usuarios que estoy siguiendo
+// Accion listado de usuarios que cualquier usuario está siguiendo
+const following = async (req, res) =>{
+    // Sacar el id del usuario identificado
+
+    // Comprobar si me llega el id por parametro en url
+
+    // comprobar si me llega la pagina, si no la pagina 1
+
+    // Usuarios por pagina quiero mostrar
+
+    // Find a follow, popular datos de los usuario y paginar con mongoose-paginate-v2
+
+    // Listado de usuarios de trinity y soy victor
+    //Sacar un array de ids de los usuarios que me siguen y los sigo como victor
+    
+    return res.status(200).send({
+        status: "success",
+        message: "Listado de usuarios que estoy siguiendo"
+    })
+}
 
 // Accion listado de usuarios que me siguen
+const followers = async (req, res) =>{
+    return res.status(200).send({
+        status: "success",
+        message: "Listado de usuarios que me siguen"
+    })
+}
 
 // Exportar acciones
 module.exports={
     pruebaFollow,
     save,
-    unfollow
+    unfollow,
+    following,
+    followers
 }
