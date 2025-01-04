@@ -9,21 +9,41 @@ const pruebaFollow = (req, res) =>{
 }
 
 // Accion de guardar un follow (accion seguir)
-const save = (req, res) => {
+const save = async (req, res) => {
 
     // Conseguir datos por body
-    
+    const params = req.body;
+
     // Sacar id del usuario identificado
+    const identity = req.user;
 
     // Crear objeto con modelo follow
+    let userToFollow = new Follow({
+        user: identity.id,
+        followed: params.followed
+    });
 
     // Guardar objeto en bbdd
-
-    return res.status(200).send({
-        status: "success",
-        message: "Metodo dar follow",
-        identity: req.user
-    })
+    try{
+        let followStored = await userToFollow.save();
+        if(!followStored){
+            return res.status(404).send({
+                status: "error",
+                message: "No se ha podido seguir al usuario"
+            })
+        }
+        return res.status(200).send({
+            status: "success",
+            message: "Metodo dar follow",
+            follow: followStored
+        })
+    }catch(error){
+        return res.status(500).send({
+            status: "error",
+            message: "Error en el servidor",
+            error: error.message
+        })
+    }
 }
 
 // Accion de borrar un follow (accion dejar de seguir)
