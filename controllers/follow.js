@@ -1,6 +1,9 @@
 const Follow = require("../models/follow")
 const User = require("../models/user")
 
+// Importar dependencias
+const mongoosePaginate = require("mongoose-paginate-v2");
+
 // Acciones de prueba
 const pruebaFollow = (req, res) =>{
     return res.status(200).send({
@@ -78,18 +81,37 @@ const unfollow = async (req, res) =>{
 // Accion listado de usuarios que cualquier usuario está siguiendo
 const following = async (req, res) =>{
     // Sacar el id del usuario identificado
+    let userId = req.user.id;
 
     // Comprobar si me llega el id por parametro en url
+    if(req.params.id) userId = req.params.id;
 
     // comprobar si me llega la pagina, si no la pagina 1
+    let page = 1;
+    if(req.params.page) page = req.params.page;
 
     // Usuarios por pagina quiero mostrar
+    const itemsPerPage = 5;
 
     // Find a follow, popular datos de los usuario y paginar con mongoose-paginate-v2
+    try{
+        let followings = await Follow.find({user: userId}).populate("user followed");
+        return res.status(200).send({
+            status: "success",
+            message: "Listado de usuarios que esta siguiendo",
+            followings
+        })
+
+    }catch(err){
+        return res.status(500).send({
+            status: "success",
+            message: "Error en la consulta"
+        })
+    }
 
     // Listado de usuarios de trinity y soy victor
     //Sacar un array de ids de los usuarios que me siguen y los sigo como victor
-    
+
     return res.status(200).send({
         status: "success",
         message: "Listado de usuarios que estoy siguiendo"
