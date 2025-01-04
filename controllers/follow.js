@@ -1,9 +1,6 @@
 const Follow = require("../models/follow")
 const User = require("../models/user")
 
-// Importar dependencias
-const mongoosePaginate = require("mongoose-paginate-v2");
-
 // Acciones de prueba
 const pruebaFollow = (req, res) =>{
     return res.status(200).send({
@@ -91,15 +88,36 @@ const following = async (req, res) =>{
     if(req.params.page) page = req.params.page;
 
     // Usuarios por pagina quiero mostrar
-    const itemsPerPage = 5;
+    const itemsPerPage = 2;
 
     // Find a follow, popular datos de los usuario y paginar con mongoose-paginate-v2
     try{
-        let followings = await Follow.find({user: userId}).populate("user followed");
+        let followings = await Follow.paginate(
+            {user: userId}, 
+            {
+                page: page, 
+                limit: itemsPerPage,
+                sort: {created_at: -1},
+                select: '-_id -__v -created_at',
+                populate: [
+                    {
+                        path: 'followed',
+                        select: '-password -role -__v -created_at'
+                    },
+                    {
+                        path: 'user',
+                        select: 'name'
+                    }
+
+                ]
+            });
         return res.status(200).send({
             status: "success",
             message: "Listado de usuarios que esta siguiendo",
-            followings
+            followings: followings.docs,
+            totalUsers: followings.totalDocs,
+            totalPages: followings.totalPages,
+            page: followings.page
         })
 
     }catch(err){

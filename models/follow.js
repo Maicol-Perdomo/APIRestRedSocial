@@ -1,4 +1,5 @@
 const {Schema, model} = require('mongoose');
+const mongoosePagination = require("mongoose-paginate-v2")
 
 const FollowSchema = Schema({
     user: {
@@ -14,5 +15,7 @@ const FollowSchema = Schema({
         default: Date.now
     }
 })
+
+FollowSchema.plugin(mongoosePagination);
 
 module.exports = model("Follow", FollowSchema, "follows");
