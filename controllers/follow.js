@@ -9,6 +9,22 @@ const pruebaFollow = (req, res) =>{
 }
 
 // Accion de guardar un follow (accion seguir)
+const save = (req, res) => {
+
+    // Conseguir datos por body
+    
+    // Sacar id del usuario identificado
+
+    // Crear objeto con modelo follow
+
+    // Guardar objeto en bbdd
+
+    return res.status(200).send({
+        status: "success",
+        message: "Metodo dar follow",
+        identity: req.user
+    })
+}
 
 // Accion de borrar un follow (accion dejar de seguir)
 
@@ -18,5 +34,6 @@ const pruebaFollow = (req, res) =>{
 
 // Exportar acciones
 module.exports={
-    pruebaFollow
+    pruebaFollow,
+    save
 }

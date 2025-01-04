@@ -252,7 +252,7 @@ const update = async (req, res) =>{
         }
 
         // Buscar y actualizar
-        let userUpdate = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, {new: true});
+        let userUpdate = await User.findByIdAndUpdate({_id: userIdentity.id}, userToUpdate, {new: true});
 
         if(!userUpdate){
             return res.status(404).send({
