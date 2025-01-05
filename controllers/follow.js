@@ -1,5 +1,8 @@
-const Follow = require("../models/follow")
-const User = require("../models/user")
+const Follow = require("../models/follow");
+const User = require("../models/user");
+
+// Importar servicio
+const followService = require("../services/followService");
 
 // Acciones de prueba
 const pruebaFollow = (req, res) =>{
@@ -111,13 +114,20 @@ const following = async (req, res) =>{
 
                 ]
             });
+        
+        // Listado de usuarios de trinity y soy victor
+        //Sacar un array de ids de los usuarios que me siguen y los sigo como victor
+        let followUserIds = await followService.followUserIds(userId);
+
         return res.status(200).send({
             status: "success",
             message: "Listado de usuarios que esta siguiendo",
             followings: followings.docs,
             totalUsers: followings.totalDocs,
             totalPages: followings.totalPages,
-            page: followings.page
+            page: followings.page,
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers
         })
 
     }catch(err){
@@ -127,8 +137,7 @@ const following = async (req, res) =>{
         })
     }
 
-    // Listado de usuarios de trinity y soy victor
-    //Sacar un array de ids de los usuarios que me siguen y los sigo como victor
+
 
     return res.status(200).send({
         status: "success",
