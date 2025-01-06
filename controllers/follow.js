@@ -5,7 +5,7 @@ const User = require("../models/user");
 const followService = require("../services/followService");
 
 // Acciones de prueba
-const pruebaFollow = (req, res) =>{
+const pruebaFollow = (req, res) => {
     return res.status(200).send({
         message: "Mensaje enviado desde: controllers/follow.js"
     })
@@ -27,9 +27,9 @@ const save = async (req, res) => {
     });
 
     // Guardar objeto en bbdd
-    try{
+    try {
         let followStored = await userToFollow.save();
-        if(!followStored){
+        if (!followStored) {
             return res.status(404).send({
                 status: "error",
                 message: "No se ha podido seguir al usuario"
@@ -40,7 +40,7 @@ const save = async (req, res) => {
             message: "Metodo dar follow",
             follow: followStored
         })
-    }catch(error){
+    } catch (error) {
         return res.status(500).send({
             status: "error",
             message: "Error en el servidor",
@@ -50,16 +50,16 @@ const save = async (req, res) => {
 }
 
 // Accion de borrar un follow (accion dejar de seguir)
-const unfollow = async (req, res) =>{
+const unfollow = async (req, res) => {
     // Conseguir id del usuario identificado
     const userId = req.user.id;
     // Conseguir id del usuario a dejar de seguir
     const followedId = req.params.id;
 
     // Find de las coincidencias y hacer remove
-    try{
+    try {
         let followDeleted = await Follow.find({
-            "user": userId, 
+            "user": userId,
             "followed": followedId
         }).deleteOne()
 
@@ -68,7 +68,7 @@ const unfollow = async (req, res) =>{
             message: "Follow eliminado Correctamente"
         })
 
-    }catch(error){
+    } catch (error) {
         return res.status(500).send({
             status: "error",
             message: "Ah ocurrido un error al dejar de seguir al usuario",
@@ -79,28 +79,28 @@ const unfollow = async (req, res) =>{
 }
 
 // Accion listado de usuarios que cualquier usuario está siguiendo
-const following = async (req, res) =>{
+const following = async (req, res) => {
     // Sacar el id del usuario identificado
     let userId = req.user.id;
 
     // Comprobar si me llega el id por parametro en url
-    if(req.params.id) userId = req.params.id;
+    if (req.params.id) userId = req.params.id;
 
     // comprobar si me llega la pagina, si no la pagina 1
     let page = 1;
-    if(req.params.page) page = req.params.page;
+    if (req.params.page) page = req.params.page;
 
     // Usuarios por pagina quiero mostrar
     const itemsPerPage = 2;
 
     // Find a follow, popular datos de los usuario y paginar con mongoose-paginate-v2
-    try{
+    try {
         let followings = await Follow.paginate(
-            {user: userId}, 
+            { user: userId },
             {
-                page: page, 
+                page: page,
                 limit: itemsPerPage,
-                sort: {created_at: -1},
+                sort: { created_at: -1 },
                 select: '-_id -__v -created_at',
                 populate: [
                     {
@@ -114,7 +114,7 @@ const following = async (req, res) =>{
 
                 ]
             });
-        
+
         // Listado de usuarios de trinity y soy victor
         //Sacar un array de ids de los usuarios que me siguen y los sigo como victor
         let followUserIds = await followService.followUserIds(userId);
@@ -130,7 +130,7 @@ const following = async (req, res) =>{
             user_follow_me: followUserIds.followers
         })
 
-    }catch(err){
+    } catch (err) {
         return res.status(500).send({
             status: "success",
             message: "Error en la consulta"
@@ -139,15 +139,68 @@ const following = async (req, res) =>{
 }
 
 // Accion listado de usuarios que me siguen
-const followers = async (req, res) =>{
-    return res.status(200).send({
-        status: "success",
-        message: "Listado de usuarios que me siguen"
-    })
+const followers = async (req, res) => {
+    // Sacar el id del usuario identificado
+    let userId = req.user.id;
+
+    // Comprobar si me llega el id por parametro en url
+    if (req.params.id) userId = req.params.id;
+
+    // comprobar si me llega la pagina, si no la pagina 1
+    let page = 1;
+    if (req.params.page) page = req.params.page;
+
+    // Usuarios por pagina quiero mostrar
+    const itemsPerPage = 2;
+
+    // Find a follow, popular datos de los usuario y paginar con mongoose-paginate-v2
+    try {
+        let followers = await Follow.paginate(
+            { followed: userId },
+            {
+                page: page,
+                limit: itemsPerPage,
+                sort: { created_at: -1 },
+                select: '-_id -__v -created_at',
+                populate: [
+                    {
+                        path: 'followed',
+                        select: '-password -role -__v -created_at'
+                    },
+                    {
+                        path: 'user',
+                        select: 'name'
+                    }
+
+                ]
+            }
+        );
+
+        let followUserIds = await followService.followUserIds(userId);
+
+        return res.status(200).send({
+            status: "success",
+            message: "Listado de usuarios que me siguen",
+            followers: followers.docs,
+            totalUsers: followers.totalDocs,
+            totalPages: followers.totalPages,
+            page: followers.page,
+            user_following: followUserIds.following,
+            user_follow_me: followUserIds.followers,
+            user: req.user.id
+        });
+
+    } catch (e) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta",
+            error: e
+        });
+    }
 }
 
 // Exportar acciones
-module.exports={
+module.exports = {
     pruebaFollow,
     save,
     unfollow,
