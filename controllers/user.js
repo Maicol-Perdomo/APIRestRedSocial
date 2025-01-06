@@ -9,7 +9,7 @@ const User = require("../models/user");
 
 // importar servicios
 const jwt = require("../services/jwt");
-const user = require("../models/user");
+const followService = require("../services/followService");
 
 // Acciones de prueba
 const pruebaUser = (req, res) =>{
@@ -149,10 +149,14 @@ const profile = async (req, res) => {
             })
         }
 
+        //Info de seguimiento
+        const followInfo = await followService.followThisUser(req.user.id, userId)
         // Devolver resultado
         return res.status(200).send({
             status: "succes",
-            user: userProfile
+            user: userProfile,
+            follower: followInfo.follower,
+            following: followInfo.following
         })
 
     }catch(error){

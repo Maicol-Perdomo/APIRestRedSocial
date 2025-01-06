@@ -136,13 +136,6 @@ const following = async (req, res) =>{
             message: "Error en la consulta"
         })
     }
-
-
-
-    return res.status(200).send({
-        status: "success",
-        message: "Listado de usuarios que estoy siguiendo"
-    })
 }
 
 // Accion listado de usuarios que me siguen
