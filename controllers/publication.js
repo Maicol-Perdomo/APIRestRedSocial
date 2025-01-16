@@ -1,3 +1,6 @@
+// Importar dependencias
+const fs = require("fs");
+
 // Importar modelo
 const Publication = require("../models/publication");
 
@@ -171,6 +174,64 @@ const user = async (req, res) =>{
 // Listar publicaciones de un usuario (FEED)
 
 // Subir ficheros
+const upload = async (req, res) => {
+    // Recoger id de la publicacion
+    const pubId = req.params.pub;
+    // Recoger el fichero de imagen y comprobar que existe
+    if (!req.file) {
+        return res.status(404).send({
+            status: "error",
+            message: "No se ha subido ninguna imagen"
+        })
+    };
+
+    // Conseguir el nombre del archivo
+    let image = req.file.originalname;
+
+    // Sacar la extension del archivo
+    const imageSplit = image.split("\.");
+    const extension = imageSplit[1].toLowerCase();
+
+    // Comprobar la extension, solo imagenes, si no es valida borrar el fichero
+    const validExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
+    if (!validExtensions.includes(extension)) {
+        // borrar el archivo
+        const filePath = req.file.path;
+        fs.unlinkSync(filePath);
+
+        // Devolver respuesta negativa
+        return res.status(400).send({
+            status: "error",
+            message: "La extension del archivo no es valida"
+        });
+    }
+
+    try {
+        const filter = {user: req.user.id, _id: pubId};
+        const update = {file: req.file.filename};
+        let updatedPub = await Publication.findOneAndUpdate(filter, update, {new: true});
+        if (!updatedPub) {
+            return res.status(404).send({
+                status: "error",
+                message: "Usuario no encontrado"
+            });
+        }
+
+        // Devolver respuesta positiva
+        return res.status(200).send({
+            status: "success",
+            message: "Metodo subir imagen",
+            publication: updatedPub
+        });
+
+    } catch (err) {
+        return res.status(500).send({
+            status: "error",
+            message: "Error en la consulta",
+            error: err
+        })
+    }
+}
 
 // Devolver archivos multimedia imagenes
 
@@ -181,5 +242,6 @@ module.exports={
     save,
     detail,
     remove,
-    user
+    user,
+    upload
 }
