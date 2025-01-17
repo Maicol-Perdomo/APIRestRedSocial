@@ -1,5 +1,6 @@
 // Importar dependencias
 const fs = require("fs");
+const path = require("path");
 
 // Importar modelo
 const Publication = require("../models/publication");
@@ -161,14 +162,6 @@ const user = async (req, res) =>{
             error: e.message
         });
     }
-
-
-    // devolver usuario
-    return res.status(200).send({
-        status: "success",
-        message: "Publicaciones del perfil de un usuario",
-        user: req.user
-    })
 }
 
 // Listar publicaciones de un usuario (FEED)
@@ -234,6 +227,33 @@ const upload = async (req, res) => {
 }
 
 // Devolver archivos multimedia imagenes
+const  media = (req, res) => {
+    // Sacar parametro de la url
+    const file = req.params.file;
+
+    // montar el path real de la imagen
+    const filePath = `./uploads/publications/${file}`;
+
+    // comprobar que existe 
+    fs.stat(filePath, (error, exist) => {
+        if (error) {
+            return res.status(500).send({
+                status: "error",
+                message: "Error en la consulta"
+            })
+        }
+
+        if (!exist) {
+            return res.status(404).send({
+                status: "error",
+                message: "La imagen no existe"
+            })
+        }
+
+        // devolver file
+        return res.sendFile(path.resolve(filePath));
+    })
+}
 
 
 // Exportar acciones
@@ -243,5 +263,6 @@ module.exports={
     detail,
     remove,
     user,
-    upload
+    upload,
+    media
 }
