@@ -5,6 +5,9 @@ const path = require("path");
 // Importar modelo
 const Publication = require("../models/publication");
 
+// Importar sercicios
+const followService = require("../services/followService")
+
 // Acciones de prueba
 const pruebaPublication = (req, res) =>{
     return res.status(200).send({
@@ -165,6 +168,54 @@ const user = async (req, res) =>{
 }
 
 // Listar publicaciones de un usuario (FEED)
+const feed = async (req, res)=>{
+    // Sacar la page actual
+    let page = 1;
+
+    if(req.params.page) page = req.params.page;
+
+    // Establecer numero de elementos por pagina
+    let itemsPerPage = 5;
+
+    try{    
+    // Sacar un array de identificadores de ususarios que yo sigo como usuario identificado
+    const myFollows = await followService.followUserIds(req.user.id);
+    // Find publicaciones in, ordenar, popular, paginar
+    let publications = await Publication.paginate(
+        {user: {"$in": myFollows.following}},
+        {
+            page: page,
+            limit: itemsPerPage,
+            sort: { created_at: 1},
+            select: '-_id -__v',
+            populate: [
+                {
+                    path: 'user',
+                    select: '-password -role -__v -email'
+                }
+            ]
+        }
+    );
+
+    return res.status(200).send({
+        status: "success",
+        message: "FEED de publicaciones",
+        publications: publications.docs,
+        page: publications.page,
+        totalPublications: publications.totalDocs
+    })
+
+    }catch(e){
+        return res.status(500).send({
+            status: "error",
+            message: "Ah ocurrido un error en obteniendo Feed",
+            error: e.message
+        });
+    };
+
+
+    
+}
 
 // Subir ficheros
 const upload = async (req, res) => {
@@ -264,5 +315,6 @@ module.exports={
     remove,
     user,
     upload,
-    media
+    media,
+    feed
 }

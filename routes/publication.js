@@ -24,5 +24,6 @@ router.delete("/remove/:id", check.auth, PublicationController.remove);
 router.get("/user/:id/:page?", check.auth, PublicationController.user);
 router.post("/upload/:pub", [check.auth, uploads.single("file0")], PublicationController.upload);
 router.get("/media/:file", check.auth, PublicationController.media);
+router.get("/feed/:page?", check.auth, PublicationController.feed);
 // Exportar Rutas
 module.exports = router;
