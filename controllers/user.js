@@ -35,8 +35,14 @@ const register = async (req, res) => {
     };
 
     // Validacion avanzada
-    validate(params);
-
+    try{
+        validate(params);
+    }catch(e){
+        return res.status(500).json({
+            status: "error",
+            message: "validacion no superada"
+        })
+    }
 
     try {
         // Normalizar los datos
