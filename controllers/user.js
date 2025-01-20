@@ -12,7 +12,7 @@ const Publication = require("../models/publication");
 // importar servicios
 const jwt = require("../services/jwt");
 const followService = require("../services/followService");
-const user = require("../models/user");
+const validate = require("../helpers/validate");
 
 
 // Acciones de prueba
@@ -33,6 +33,10 @@ const register = async (req, res) => {
             message: "Faltan datos por enviar"
         })
     };
+
+    // Validacion avanzada
+    validate(params);
+
 
     try {
         // Normalizar los datos
