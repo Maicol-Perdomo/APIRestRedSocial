@@ -138,7 +138,7 @@ const user = async (req, res) =>{
                 populate: [
                     {
                         path: 'user',
-                        select: '-password -role -__v'
+                        select: '-password -role -__v -email'
                     }
                 ]
             }

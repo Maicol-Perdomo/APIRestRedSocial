@@ -105,11 +105,11 @@ const following = async (req, res) => {
                 populate: [
                     {
                         path: 'followed',
-                        select: '-password -role -__v -created_at'
+                        select: '-password -role -__v -email'
                     },
                     {
                         path: 'user',
-                        select: 'name'
+                        select: '-password -role -__v -email'
                     }
 
                 ]
@@ -161,7 +161,7 @@ const followers = async (req, res) => {
                 page: page,
                 limit: itemsPerPage,
                 sort: { created_at: -1 },
-                select: '-_id -__v -created_at',
+                select: '-password -role -__v -email',
                 populate: [
                     {
                         path: 'followed',
@@ -169,7 +169,7 @@ const followers = async (req, res) => {
                     },
                     {
                         path: 'user',
-                        select: 'name'
+                        select: '-password -role -__v -email'
                     }
 
                 ]

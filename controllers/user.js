@@ -177,7 +177,8 @@ const list = async (req, res) => {
         const options = {
             page: page,
             limit: itemsPerPage,
-            sort: { _id: 1 }
+            sort: { _id: 1 },
+            select: '-password -email -role -__v'
         };
 
         const result = await User.paginate({}, options);
