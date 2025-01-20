@@ -5,11 +5,15 @@ const path = require("path");
 
 // Importar modelos
 const User = require("../models/user");
+const Follow = require("../models/follow");
+const Publication = require("../models/publication");
 
 
 // importar servicios
 const jwt = require("../services/jwt");
 const followService = require("../services/followService");
+const user = require("../models/user");
+
 
 // Acciones de prueba
 const pruebaUser = (req, res) => {
@@ -258,6 +262,8 @@ const update = async (req, res) => {
         if (userToUpdate.password) {
             let pwd = await bcrypt.hash(userToUpdate.password, 10)
             userToUpdate.password = pwd;
+        }else{
+            delete userToUpdate.password;
         }
 
         // Buscar y actualizar
@@ -386,6 +392,34 @@ const avatar = (req, res) => {
     })
 }
 
+const counters = async (req, res) =>{
+    let userId = req.user.id;
+
+    if(req.params.id){
+        userId = req.params.id;
+    }
+    try{
+    const following = await Follow.countDocuments({"user": userId});
+
+    const followed = await Follow.countDocuments({"followed": userId});
+
+    const publications = await Publication.countDocuments({"user": userId});
+
+    return res.status(200).send({
+        userId,
+        following,
+        followed,
+        publications
+    })
+    }catch(e){
+        return res.status(500).send({
+            status: "error",
+            message: "error en counter",
+            error: e.message
+        })
+    }
+}
+
 // Exportar acciones
 module.exports = {
     pruebaUser,
@@ -395,5 +429,6 @@ module.exports = {
     list,
     update,
     upload,
-    avatar
+    avatar,
+    counters
 }

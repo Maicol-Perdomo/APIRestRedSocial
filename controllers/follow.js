@@ -165,7 +165,7 @@ const followers = async (req, res) => {
                 populate: [
                     {
                         path: 'followed',
-                        select: '-password -role -__v -created_at'
+                        select: '-password -role -__v -email'
                     },
                     {
                         path: 'user',
